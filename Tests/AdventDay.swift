@@ -1,6 +1,6 @@
 import Testing
 
-@testable import AdventOfCode
+@testable import aoc
 
 // One off test to validate that basic data load testing works
 @Suite("AdventDay")

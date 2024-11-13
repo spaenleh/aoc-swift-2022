@@ -8,7 +8,7 @@ let dependencies: [Target.Dependency] = [
 ]
 
 let package = Package(
-    name: "AdventOfCode",
+    name: "aoc",
     platforms: [.macOS(.v13)],
     dependencies: [
         .package(
@@ -26,13 +26,13 @@ let package = Package(
     ],
     targets: [
         .executableTarget(
-            name: "AdventOfCode",
+            name: "aoc",
             dependencies: dependencies,
             resources: [.copy("Data")]
         ),
         .testTarget(
             name: "AdventOfCodeTests",
-            dependencies: ["AdventOfCode"] + dependencies
+            dependencies: ["aoc"] + dependencies
         ),
     ]
 )

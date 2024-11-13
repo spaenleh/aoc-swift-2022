@@ -1,6 +1,6 @@
 import Testing
 
-@testable import AdventOfCode
+@testable import aoc
 
 @Suite("Day01")
 struct Day01Tests {
