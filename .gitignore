@@ -10,3 +10,4 @@ lcov.info
 Package.resolved
 Sources/Data/Day*.txt
 .vscode
+test-reports-*.xml
