@@ -9,7 +9,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install Swiftly
-        run: curl -L https://swiftlang.github.io/swiftly/swiftly-install.sh | bash
+        run: curl -L https://swiftlang.github.io/swiftly/swiftly-install.sh | bash -s -- -y
 
       - name: Install latest swift version
         run: swiftly install latest
