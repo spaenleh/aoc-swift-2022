@@ -18,4 +18,12 @@ jobs:
         run: swift build
 
       - name: Run tests
-        run: swift test
+        run: swift test --xunit-output test-reports.xml
+
+      - name: Test Report
+        uses: dorny/test-reporter@v1
+        if: success() || failure() # run this step even if previous step failed
+        with:
+          name: Swift Tests # Name of the check run which will be created
+          path: test-reports-*.xml # Path to test results
+          reporter: swift-xunit # Format of test results
