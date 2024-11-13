@@ -1,6 +1,60 @@
 import Algorithms
 
+/// Protocol that allows conformance to moves
+protocol Playable {
+  var intoMove: Move { get }
+}
+
+/// Enum that allows to parse opponent moves
+enum OpponentMove: String, Playable {
+  case Rock = "A"
+  case Paper = "B"
+  case Scissors = "C"
+
+  init<S: StringProtocol>(from move: S) {
+    self = OpponentMove(rawValue: String(move)) ?? .Rock
+  }
+
+  var intoMove: Move {
+    switch self {
+    case .Rock: .Rock
+    case .Paper: .Paper
+    case .Scissors: .Scissors
+    }
+  }
+}
+
+/// Enum that allows to parse own moves
+enum OwnMove: String, Playable {
+  case Rock = "X"
+  case Paper = "Y"
+  case Scissors = "Z"
+
+  init<S: StringProtocol>(from move: S) {
+    self = OwnMove(rawValue: String(move)) ?? .Rock
+  }
+
+  var intoMove: Move {
+    switch self {
+    case .Rock: .Rock
+    case .Paper: .Paper
+    case .Scissors: .Scissors
+    }
+  }
+}
+
+/// Enum representing Outcomes of the game
+enum Outcome: String {
+  case Lose = "X"
+  case Draw = "Y"
+  case Win = "Z"
+}
+
+/// Represent a move in the Rock Paper, Scissors game
+///
+/// The enum has a raw value representing the score that the usage of a move gives you
 enum Move: Int {
+  // define the rawValue as the score user gets for playing the move
   case Rock = 1
   case Paper, Scissors
 
@@ -8,55 +62,19 @@ enum Move: Int {
     [.Rock, .Paper, .Scissors]
   }
 
-  enum ParseError: Error {
-    case InvalidMove
-  }
-
-  static func parseOwn<S: StringProtocol>(_ move: S) throws -> Self {
-    switch move {
-    case "X":
-      return .Rock
-    case "Y":
-      return .Paper
-    case "Z":
-      return .Scissors
-    default:
-      throw ParseError.InvalidMove
-
-    }
-  }
-
-  static func parseOpponent<S: StringProtocol>(_ move: S) throws -> Self {
-    switch move {
-    case "A":
-      return .Rock
-    case "B":
-      return .Paper
-    case "C":
-      return .Scissors
-    default:
-      throw ParseError.InvalidMove
-    }
-  }
-
   static func shouldPlay(_ prediction: RoundPrediction) -> Self {
     switch prediction.outcome {
     case .Draw:
-      return prediction.opponentMove
+      return prediction.opponent
     case .Lose:
-      return Move.allMoves.first { $0 < prediction.opponentMove }!
+      return Move.allMoves.first { $0 < prediction.opponent } ?? .Rock
     case .Win:
-      return Move.allMoves.first { $0 > prediction.opponentMove }!
+      return Move.allMoves.first { $0 > prediction.opponent } ?? .Rock
     }
   }
 }
 
-enum Outcome: String {
-  case Lose = "X"
-  case Draw = "Y"
-  case Win = "Z"
-}
-
+/// Conform Move to Comparable so we can define an order and check for wins with <, >, ==
 extension Move: Comparable {
   static func < (lhs: Move, rhs: Move) -> Bool {
     switch lhs {
@@ -68,19 +86,13 @@ extension Move: Comparable {
 }
 
 struct Round {
-  var ownMove: Move
-  var opponentMove: Move
-
-  static func parse<S: StringProtocol>(from move: S) -> Self {
-    let moves = move.split(separator: " ")
-    let (opponent, own) = (moves[0], moves[1])
-    return Round(ownMove: try! Move.parseOwn(own), opponentMove: try! Move.parseOpponent(opponent))
-  }
+  var own: Move
+  var opponent: Move
 
   func roundScore() -> Int {
-    if ownMove < opponentMove {
+    if own < opponent {
       return 0
-    } else if ownMove == opponentMove {
+    } else if own == opponent {
       return 3
     } else {
       return 6
@@ -88,24 +100,31 @@ struct Round {
   }
 
   func totalScore() -> Int {
-    roundScore() + ownMove.rawValue
+    roundScore() + own.rawValue
+  }
+}
+
+// add overloaded initializer but keeping member-wise initializer
+extension Round {
+  init<S: StringProtocol>(from move: S) {
+    let moves = move.split(separator: " ")
+    opponent = OpponentMove(from: moves[0]).intoMove
+    own = OwnMove(from: moves[1]).intoMove
   }
 }
 
 struct RoundPrediction {
-  var opponentMove: Move
+  var opponent: Move
   var outcome: Outcome
 
-  static func parse<S: StringProtocol>(from prediction: S) -> Self {
+  init<S: StringProtocol>(from prediction: S) {
     let moves = prediction.split(separator: " ")
-    return Self(
-      opponentMove: try! Move.parseOpponent(moves[0]), outcome: Outcome(rawValue: String(moves[1]))!
-    )
+    opponent = OpponentMove(from: moves[0]).intoMove
+    outcome = Outcome(rawValue: String(moves[1])) ?? .Win
   }
 }
 
 struct Game {
-
   static func computeScore(forRounds rounds: [Round]) -> Int {
     var score = 0
     for round in rounds {
@@ -118,7 +137,7 @@ struct Game {
     var score = 0
     for prediction in predictions {
       let move = Move.shouldPlay(prediction)
-      score += Round(ownMove: move, opponentMove: prediction.opponentMove).totalScore()
+      score += Round(own: move, opponent: prediction.opponent).totalScore()
     }
     return score
   }
@@ -133,11 +152,11 @@ struct Day02: AdventDay {
   }
 
   var playSheet: [Round] {
-    strategyGuide.map { Round.parse(from: $0) }
+    strategyGuide.map { Round(from: $0) }
   }
 
   var definedOutcome: [RoundPrediction] {
-    strategyGuide.map { RoundPrediction.parse(from: $0) }
+    strategyGuide.map { RoundPrediction(from: $0) }
   }
 
   func part1() -> Int {

@@ -19,14 +19,14 @@ struct Day02Tests {
 
   @Test("Scoring")
   func testSCoring() async throws {
-    #expect(Round(ownMove: .Paper, opponentMove: .Paper).roundScore() == 3, "Draw scores 3 points")
-    #expect(Round(ownMove: .Paper, opponentMove: .Rock).roundScore() == 6, "Win scores 6 points")
-    #expect(Round(ownMove: .Rock, opponentMove: .Paper).roundScore() == 0, "Lose scores 0 points")
+    #expect(Round(own: .Paper, opponent: .Paper).roundScore() == 3, "Draw scores 3 points")
+    #expect(Round(own: .Paper, opponent: .Rock).roundScore() == 6, "Win scores 6 points")
+    #expect(Round(own: .Rock, opponent: .Paper).roundScore() == 0, "Lose scores 0 points")
   }
 
   @Test("Single round")
   func testSingleRound() async throws {
-    #expect(Game.computeScore(forRounds: [Round.parse(from: "A Y")]) == 8, "Draw")
+    #expect(Game.computeScore(forRounds: [Round(from: "A Y")]) == 8, "Draw")
   }
 
   @Test("part1")
@@ -37,7 +37,7 @@ struct Day02Tests {
 
   @Test("With Predictions")
   func testPrediction() async throws {
-    #expect(Move.shouldPlay(RoundPrediction.parse(from: "A Y")) == .Rock)
+    #expect(Move.shouldPlay(RoundPrediction(from: "A Y")) == .Rock)
   }
 
   @Test("part2")
