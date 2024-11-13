@@ -11,7 +11,7 @@ struct Day02Tests {
     """
 
   @Test("Comparisons of moves")
-  func testComparions() async throws {
+  func testComparisons() async throws {
     #expect(Move.Paper > Move.Rock, "Paper beats rock")
     #expect(Move.Rock > Move.Scissors, "Rock beats scissors")
     #expect(Move.Scissors > Move.Paper, "Scissors beats paper")
