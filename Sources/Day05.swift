@@ -16,8 +16,20 @@ struct CrateStack: CustomStringConvertible, Equatable {
     stack.append(crate)
   }
 
+  mutating func add(allOf crates: [String]) {
+    stack.append(contentsOf: crates)
+  }
+
   mutating func remove() -> String {
     stack.popLast()!
+  }
+
+  mutating func remove(count: Int) -> [String] {
+    var crates = [String]()
+    for _ in 0..<count {
+      crates.append(self.remove())
+    }
+    return crates.reversed()
   }
 }
 
@@ -26,10 +38,17 @@ struct Instruction {
   let numberOfCratesToMove: Int
   let targetStackIndex: Int
 
-  func execute(crateStacks: inout [CrateStack]) {
-    for _ in 0..<numberOfCratesToMove {
-      let crate = crateStacks[stackIndex].remove()
-      crateStacks[targetStackIndex].add(crate)
+  func execute(crateStacks: inout [CrateStack], mode: OperationMode) {
+    switch mode {
+    case .Single:
+      for _ in 0..<numberOfCratesToMove {
+        let crate = crateStacks[stackIndex].remove()
+        crateStacks[targetStackIndex].add(crate)
+      }
+
+    case .Multiple:
+      let crates = crateStacks[stackIndex].remove(count: numberOfCratesToMove)
+      crateStacks[targetStackIndex].add(allOf: crates)
     }
   }
 }
@@ -48,9 +67,14 @@ extension Instruction {
   }
 }
 
+enum OperationMode {
+  case Single, Multiple
+}
+
 struct Dock: CustomStringConvertible {
   let instructions: [Instruction]
   var stacks: [CrateStack] = [CrateStack]()
+  var operationMode: OperationMode = .Single
 
   init(from input: String) {
     let parts = input.split(separator: "\n\n")
@@ -81,7 +105,7 @@ struct Dock: CustomStringConvertible {
 
   mutating func operate() {
     for instruction in instructions {
-      instruction.execute(crateStacks: &stacks)
+      instruction.execute(crateStacks: &stacks, mode: operationMode)
     }
   }
 
@@ -112,7 +136,11 @@ struct Day05: AdventDay {
     return dock.topCrates
   }
 
-  func part2() -> Int {
-    0
+  func part2() -> String {
+    var dock = dock
+    // change operation mode
+    dock.operationMode = .Multiple
+    dock.operate()
+    return dock.topCrates
   }
 }
