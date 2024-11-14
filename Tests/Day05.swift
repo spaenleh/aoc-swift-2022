@@ -28,8 +28,8 @@ struct Day05Tests {
   func testInstructions() async throws {
     let instruction = Instruction(from: "move 1 from 2 to 1")
     #expect(instruction.numberOfCratesToMove == 1)
-    #expect(instruction.stackIndex == 2)
-    #expect(instruction.targetStackIndex == 1)
+    #expect(instruction.stackIndex == (2 - 1))
+    #expect(instruction.targetStackIndex == (1 - 1))
   }
 
   @Test("TopCrates")
