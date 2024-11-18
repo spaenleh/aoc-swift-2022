@@ -30,6 +30,22 @@ struct Day07Tests {
     7214296 k
     """
 
+  @Test("Walker")
+  func testWalker() async throws {
+    var walk = Walker(
+      log:
+        """
+        $ cd /
+        $ ls
+        dir a
+        1234 b.txt
+        """)
+    #expect(walk.fileHierarchy.dirs[0].name == "a")
+    let fileValues = walk.fileHierarchy.files
+    #expect(fileValues[0].name == "b.txt")
+    #expect(fileValues[0].size == 1234)
+  }
+
   @Test("part1")
   func testPart1() async throws {
     let challenge = Day07(data: testData)
