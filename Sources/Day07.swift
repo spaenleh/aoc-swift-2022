@@ -14,20 +14,16 @@ struct Johnny {
   var currentPath = [String]()
   var files: [String: File] = [String: File]()
 
-  static func pathToString(path: [String]) -> String {
-    (path).joined(separator: "/")
+  static func pathToString(path: [String], name: String) -> String {
+    "\((path).joined(separator: "/"))/\(name)"
   }
 
   init(data: String) {
     // split the instructions
     let logLines = data.split(separator: "\n")
 
-    // initialize the hierarchy
-
     // iterate over the instructions
     for line in logLines {
-      print("\n---")
-      // print(currentPath)
 
       // split the line into components
       let lineComponents = line.split(separator: " ")
@@ -42,31 +38,48 @@ struct Johnny {
             let _ = currentPath.popLast() ?? "not found"
           } else if argument == "/" {
             // at the start
-            currentPath = ["/"]
+            currentPath = []
           } else {
             // we used something like "cd a"
-            print("adding \(argument) to path")
+            // print("adding \(argument) to path")
             currentPath.append(String(argument))
           }
         }
         if command == "ls" {
-          print("path", currentPath)
-          print("current dir is \(currentPath.last ?? "not found")")
+          continue
         }
       } else {
-        if lineComponents[0] == "dir" {
-          let dirName = String(lineComponents[1])
-          print("there will be a dir called: \(dirName)")
-        } else {
+        if lineComponents[0] != "dir" {
           // treating files
           let name = String(lineComponents[1])
           let size = Int(lineComponents[0]) ?? 0
-          let path = Self.pathToString(path: currentPath)
-          print("file \(name), \(size)")
+          let path = Self.pathToString(path: currentPath, name: name)
+          // print("file \(name), \(size)")
           files[path] = File(name: name, size: size)
         }
       }
     }
+  }
+
+  func totalSize() -> Int {
+    files.values.map { $0.size }.reduce(0, +)
+  }
+
+  func sizeByFolder() -> [String: Int] {
+    var folderSizes = [String: Int]()
+
+    let dirs = files.grouped { (key: String, value: File) in
+      let keys = key.split(separator: "/")
+      return keys[..<(keys.count - 1)].joined(separator: "/")
+    }
+    for (key, _) in dirs {
+      let containedDirs = dirs.filter { $0.key.hasPrefix(key) }
+      let containedSizes = containedDirs.values.map { v in
+        v.map { $1.size }.reduce(0, +)
+      }
+      folderSizes[key] = containedSizes.reduce(0, +)
+    }
+    return folderSizes
   }
 }
 
@@ -78,9 +91,14 @@ struct Day07: AdventDay {
 
   func part1() -> Int {
     let walker = Johnny(data: data)
-    print(walker.files)
-    // return walker.allDirectorySizes.filter { $0 <= 100_000 }.reduce(0, +)
-    return 0
+    // 1221521 -> too low
+    // 2242716 -> too high
+    // 34589339 -> too high
+    let smallDirs = walker.sizeByFolder().filter { $1 < 100_000 }
+    for dir in smallDirs {
+      print(dir)
+    }
+    return smallDirs.map { $1 }.reduce(0, +)
   }
 
   func part2() -> Int {
